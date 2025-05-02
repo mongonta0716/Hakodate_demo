@@ -54,7 +54,8 @@ StackchanSystemConfig system_config;          // (Stackchan_system_config.h) プ
 
 uint32_t mouth_wait = 2000;       // 通常時のセリフ入れ替え時間（msec）
 uint32_t last_mouth_millis = 0;   // セリフを入れ替えた時間
-bool core_port_a = false;         // Core1のPortAを使っているかどうか
+
+uint8_t swing_width = 0;
 
 const char* lyrics[] = { "手を振ってみて ", "左から右へ手をかざしてみて", "右から左へ手をかざしてみて"};  // 通常モード時に表示するセリフ
 const int lyrics_size = sizeof(lyrics) / sizeof(char*);  // セリフの数
@@ -66,7 +67,7 @@ int lyrics_idx = 0;                                      // 表示するセリ�
 void moveRandom(void *args) {
   for (;;) { // 無限ループ（BtnCが押されるまでランダムモードを繰り返します。
     // ランダムモード
-    int x = random(system_config.getServoInfo(AXIS_X)->lower_limit + 90, system_config.getServoInfo(AXIS_X)->upper_limit - 90);  // 可動範囲の下限+45〜上限-45 でランダム
+    int x = random(system_config.getServoInfo(AXIS_X)->lower_limit + swing_width, system_config.getServoInfo(AXIS_X)->upper_limit - swing_width);  // 可動範囲の下限+45〜上限-45 でランダム
     int y = random(system_config.getServoInfo(AXIS_Y)->lower_limit, system_config.getServoInfo(AXIS_Y)->upper_limit);            // 可動範囲の下限〜上限 でランダム
     M5.update();
     if (M5.BtnC.wasPressed()) {
@@ -210,14 +211,19 @@ void loop() {
     // 3mから50cmまでの距離を5段階に分ける
     if (presenceVal > 0) {
       if (presenceVal < 100) {
+        swing_width = 60;
         newColorIndex = 1;  // 最も遠い（約3m）
       } else if (presenceVal < 200) {
+        swing_width = 80;
         newColorIndex = 2;  // 遠い（約2m）
       } else if (presenceVal < 400) {
+        swing_width = 100;
         newColorIndex = 3;  // 中間（約1.5m）
       } else if (presenceVal < 800) {
+        swing_width = 120;
         newColorIndex = 4;  // 近い（約1m）
       } else {
+        swing_width = 140;  // 近い（約50cm以下）
         newColorIndex = 5;  // 最も近い（約50cm以下）
       }
     }
